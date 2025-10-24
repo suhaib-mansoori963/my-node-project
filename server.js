@@ -3,10 +3,14 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 
 const app = express();
-const PORT = 5000;
 
 // ✅ Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: "*", // Allow all domains (frontend can call freely)
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  })
+);
 app.use(express.json());
 
 // ✅ MongoDB Connection
@@ -44,7 +48,7 @@ app.post("/products", async (req, res) => {
   try {
     const newProduct = new Product({ name: req.body.name });
     await newProduct.save();
-    res.status(200).json(newProduct);
+    res.status(201).json(newProduct);
   } catch (error) {
     res.status(500).json({ error: "Failed to add product" });
   }
@@ -76,7 +80,13 @@ app.delete("/products/:id", async (req, res) => {
   }
 });
 
-// ✅ Server listen
-app.listen(PORT, () => {
-  console.log(`🚀 API running at http://localhost:${PORT}`);
-});
+// ✅ Export app for Vercel
+module.exports = app;
+
+// ✅ Local run ke liye (sirf jab local test kar rahe ho)
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`🚀 API running at http://localhost:${PORT}`);
+  });
+}
